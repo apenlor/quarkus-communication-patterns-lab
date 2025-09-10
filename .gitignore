@@ -1,0 +1,63 @@
+# =================================================================
+# Java / Maven / Quarkus
+# =================================================================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Quarkus-specific build outputs
+/lib/
+/quarkus-app/
+/build/
+
+# =================================================================
+# JVM
+# =================================================================
+*.class
+*.log
+hs_err_pid*
+
+# =================================================================
+# IDEs
+# =================================================================
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# VS Code
+.vscode/
+
+# =================================================================
+# OS Generated Files
+# =================================================================
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# =================================================================
+# Security, Reports & Secrets
+# =================================================================
+# OWASP Dependency-Check reports
+dependency-check-report.*
+
+# Local environment variables
+.env
