@@ -1,0 +1,19 @@
+services:
+  server-jvm:
+    # Build the image from the Dockerfile.jvm located in the 'server' directory.
+    build:
+      context: ./server
+      dockerfile: Dockerfile.jvm
+    container_name: quarkus-lab-jvm
+    ports:
+      - "8080:8080"
+    environment:
+      # It tells Quarkus to listen on all network interfaces inside the container, not just localhost.
+      - QUARKUS_HTTP_HOST=0.0.0.0
+    healthcheck:
+      # The /q/health/live endpoint is provided by the quarkus-smallrye-health extension.
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/q/health/live" ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
