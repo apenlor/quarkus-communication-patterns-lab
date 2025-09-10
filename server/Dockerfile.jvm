@@ -1,0 +1,35 @@
+# ===================================================================
+# Stage 1: Dependency Resolver
+# ===================================================================
+FROM maven:3.9.11-eclipse-temurin-21 AS dependency_resolver
+WORKDIR /app
+COPY pom.xml .
+
+RUN mvn dependency:go-offline
+
+# ===================================================================
+# Stage 2: Application Builder
+# ===================================================================
+FROM dependency_resolver AS builder
+
+# Copy the application source code. Changes here will invalidate this layer's cache, but not the dependency layer above
+COPY src ./src
+
+# Build the application
+RUN mvn package -Dquarkus.package.type=uber-jar -DskipTests
+
+# ===================================================================
+# Stage 3: Final Image
+# ===================================================================
+FROM eclipse-temurin:21-jre-jammy
+
+# Create a dedicated, non-root user for security
+RUN adduser --system --group --no-create-home quarkus-user
+USER quarkus-user
+WORKDIR /app
+
+# Copy the runnable uber-jar from the builder stage and give it a simple name
+COPY --from=builder /app/target/*-runner.jar app.jar
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
