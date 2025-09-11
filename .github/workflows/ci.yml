@@ -32,4 +32,4 @@ jobs:
 
       # Validates that our application can be successfully packaged into a container
       - name: Build Docker image for validation
-        run: docker-compose build server-jvm
+        run: docker compose build server-jvm
