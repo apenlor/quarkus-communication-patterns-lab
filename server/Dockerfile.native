@@ -1,0 +1,33 @@
+# ===================================================================
+# Stage 1: Native Builder
+# ===================================================================
+FROM quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 AS builder
+WORKDIR /app
+
+COPY pom.xml .
+COPY mvnw .
+COPY .mvn ./.mvn
+
+RUN ./mvnw dependency:go-offline
+
+COPY src ./src
+# Build the native executable. This is the time-intensive step.
+# The -Pnative profile activates the GraalVM compilation.
+RUN ./mvnw package -Pnative -DskipTests
+
+# ===================================================================
+# Stage 2: Final Image
+# ===================================================================
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1756195339
+WORKDIR /app
+
+# Create a dedicated, non-root user for security
+RUN chown 1001:0 /app && chmod g+rwx /app
+
+# Copy the native executable from the builder stage and give it a simple name
+COPY --from=builder --chown=1001:0 /app/target/*-runner /app/application
+
+USER 1001
+EXPOSE 8080
+# -Dquarkus.http.host=0.0.0.0 is necessary to bind to all network interfaces.
+ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0"]
