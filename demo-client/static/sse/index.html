@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SSE Ticker Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/common/main.css">
+    <style>
+        /* Styles specific to the SSE demo */
+        .ticker-box {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .status { font-weight: bold; }
+        .connected { color: #27ae60; }
+        .disconnected { color: #c0392b; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Server-Sent Events (SSE) Ticker Demo</h1>
+    <p>This page demonstrates a real-time data stream from the server using SSE. Two independent connections are made:
+        one to the JVM service and one to the GraalVM Native service.</p>
+
+    <div class="ticker-box">
+        <h2>JVM Service (Port 8080)</h2>
+        <p>Status: <span id="jvm-status" class="disconnected">Connecting...</span></p>
+        <h4>Last Received Message:</h4>
+        <pre id="jvm-ticker">Waiting for data...</pre>
+    </div>
+
+    <div class="ticker-box">
+        <h2>Native Service (Port 8081)</h2>
+        <p>Status: <span id="native-status" class="disconnected">Connecting...</span></p>
+        <h4>Last Received Message:</h4>
+        <pre id="native-ticker">Waiting for data...</pre>
+    </div>
+
+    <a href="/" class="nav-link">&larr; Back to Home</a>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

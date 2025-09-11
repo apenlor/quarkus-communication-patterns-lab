@@ -2,30 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quarkus REST Lab</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Quarkus Communication Patterns Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="common/main.css">
 </head>
 <body>
-<header>
+<div class="container">
     <h1>Quarkus Communication Patterns Lab</h1>
-    <h2>Phase 1.0: REST Baseline</h2>
-</header>
-<main>
-    <div class="card">
-        <h3>Send a Message to the Echo API</h3>
-        <form id="echo-form">
-            <label for="message">Message:</label>
-            <textarea id="message" name="message" rows="3" placeholder="Type your message here..." required>Hello, Quarkus!</textarea>
-            <button type="submit">Send POST Request</button>
-        </form>
-    </div>
-    <div class="card">
-        <h3>Server Response</h3>
-        <div id="status">Ready.</div>
-        <pre><code id="response-output"></code></pre>
-    </div>
-</main>
-<script src="script.js"></script>
+    <p>Select a communication pattern to test:</p>
+    <nav class="main-nav">
+        <ul>
+            <li><a href="rest/" class="nav-link">Phase 1: REST (Request-Response)</a></li>
+            <li><a href="sse/" class="nav-link">Phase 2: Server-Sent Events (SSE)</a></li>
+        </ul>
+    </nav>
+</div>
 </body>
 </html>
