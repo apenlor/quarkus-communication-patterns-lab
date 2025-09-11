@@ -27,7 +27,8 @@ jobs:
 
       # Executes the tests using the Maven Wrapper
       - name: Run tests with Maven Wrapper
-        run: ./server/mvnw -B clean test --file ./server/pom.xml
+        working-directory: ./server
+        run: ./mvnw -B clean test
 
       # Validates that our application can be successfully packaged into a container
       - name: Build Docker image for validation
