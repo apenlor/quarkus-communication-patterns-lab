@@ -1,5 +1,7 @@
 # Quarkus & GraalVM Communication Patterns Lab
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3978d46fde6140bab34469fab209ff36)](https://app.codacy.com/gh/apenlor/quarkus-communication-patterns-lab?utm_source=github.com&utm_medium=referral&utm_content=apenlor/quarkus-communication-patterns-lab&utm_campaign=Badge_Grade)
+
 A repository that systematically demonstrates, benchmarks, and compares common client-server communication patterns on
 the Quarkus framework. The core objective is to contrast the performance characteristics (startup time, memory usage,
 throughput, latency) of the standard JVM runtime versus a GraalVM native executable.
