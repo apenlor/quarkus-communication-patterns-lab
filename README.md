@@ -1,144 +1,128 @@
-# Quarkus & GraalVM Communication Patterns Lab
+# Quarkus & GraalVM Communication Patterns Lab (v2.0-sse)
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/33df58ded13c4bf39ef8bc99670b7570)](https://app.codacy.com/gh/apenlor/quarkus-communication-patterns-lab/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![CI Build Status](https://github.com/apenlor/quarkus-communication-patterns-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/apenlor/quarkus-communication-patterns-lab/actions/workflows/ci.yml)
 [![Latest Tag](https://img.shields.io/github/v/tag/apenlor/quarkus-communication-patterns-lab)](https://github.com/apenlor/quarkus-communication-patterns-lab/tags)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A repository that systematically demonstrates, benchmarks, and compares common client-server communication patterns on
-the Quarkus framework. The core objective is to contrast the performance characteristics (startup time, memory usage,
-throughput, latency) of the standard JVM runtime versus a GraalVM native executable.
-
-## Core Principles
-
-This project is engineered with the following principles to ensure it serves as a high-quality, reproducible example of
-modern software engineering:
-
-* **Reproducibility:** The entire lab-server, demo client, and benchmark tools—is orchestrated via Docker Compose and
-  runnable with a single command.
-* **Phased Development:** The project is built additively. Each completed phase is frozen with an immutable, annotated
-  Git tag, creating a logical and reviewable history.
-* **Isolation:** Each communication pattern is implemented as a distinct, cleanly separated endpoint within a single
-  microservice.
+This README documents the state of the project at the **v2.0-sse** tag. At this phase, the repository demonstrates both
+a synchronous REST API and a server-to-client streaming API using Server-Sent Events (SSE). It also introduces the
+GraalVM native executable for direct performance comparison against the JVM.
 
 ## Technology Stack
 
-* **Backend:** Java 21 (LTS) & Quarkus 3.x
-* **Build System:** Maven 3.9+
-* **Containerization:** Docker & Docker Compose
-* **Demo Client:** Static HTML/CSS/JS served via Nginx
-* **Benchmark Tooling:** `wrk` (via Docker), Bash Scripts
-* **CI/CD:** GitHub Actions
-
-## Repository Structure
-
-The repository is organized to clearly separate concerns, making it easy to navigate and understand.
-
-| File / Directory     | Description                                                                                                                              |
-|----------------------|------------------------------------------------------------------------------------------------------------------------------------------|
-| `.github/workflows/` | Contains the CI/CD pipelines (e.g., [`ci.yml`](.github/workflows/ci.yml)) powered by GitHub Actions.                                     |
-| `bench-clients/`     | Holds client-side scripts (`wrk`, `k6`, etc.) used to run performance and load testing benchmarks.                                       |
-| `demo-client/`       | A static HTML/JS/CSS frontend served via a dedicated Nginx container to demonstrate API functionality.                                   |
-| `scripts/`           | Contains operational helper scripts, such as the [`measure-startup.sh`](scripts/measure-startup.sh) tool for benchmarking startup times. |
-| `server/`            | The core Quarkus Maven project containing the Java backend service.                                                                      |
-| `docker-compose.yml` | The master orchestration file. Running `docker-compose up` builds and starts the entire lab.                                             |
-| `README.md`          | Project documentation, including the mission, quickstart guide, and roadmap.                                                             |
-| `LICENSE`            | The MIT License under which this project is distributed.                                                                                 |
-
-
-## Quickstart
-
-This repository is designed to be run with a single command. At this phase, it will launch the JVM-based server and a
-static Nginx client.
-
-**Prerequisites:**
-
-* Docker
-* Docker Compose
-
-**Instructions:**
-
-1. Clone the repository:
-   ```bash
-   git clone git@github.com:apenlor/quarkus-communication-patterns-lab.git
-   cd quarkus-communication-patterns-lab
-   ```
-2. Build and run all services:
-   ```bash
-   docker-compose up -d --build
-   ```
-3. Access the services:
-    * **Demo Client UI:** [http://localhost:8082](http://localhost:8082)
-    * **JVM API Health:** [http://localhost:8080/q/health/live](http://localhost:8080/q/health/live)
+- **Backend:** Java 21 & Quarkus 3.x
+- **Runtimes:** JVM, GraalVM Native
+- **Containerization:** Docker & Docker Compose
+- **Demo Client:** Static HTML/CSS/JS served via Nginx
+- **Benchmark Tooling:** [`wrk`](https://github.com/wg/wrk), [`k6`](https://github.com/grafana/k6) (with custom [
+  `xk6-sse`](https://github.com/phymbert/xk6-sse) extension)
 
 ---
 
-## Current Phase: 1.0 - REST Baseline
+## How to Run This Phase
 
-This phase establishes the foundational structure of the project. It implements a standard synchronous, request-response
-API using JSON over HTTP to serve as the performance baseline against which all subsequent patterns will be measured.
+### Prerequisites
 
-### Running the Benchmarks for Phase 1.0
+- Docker and Docker Compose
+- A shell environment (Bash, Zsh) with `curl` and `bc`
 
-The benchmark scripts are designed to be run from the repository root while the services are running.
+### 1. Clone and Check Out the Tag
 
-#### 1. Measuring Startup Time
-
-This script measures the "time to readiness" by cleanly starting the container and polling its health endpoint. It
-provides a precise metric for the cold start performance of the JVM-based application.
-
-**Command:**
+Ensure you are on the correct version of the code.
 
 ```bash
-  ./scripts/measure_startup.sh server-jvm
+	git clone https://github.com/apenlor/quarkus-communication-patterns-lab.git
+	cd quarkus-communication-patterns-lab
+	git checkout v2.0-sse
 ```
 
-**Sample Output:**
+### 2. Build and Run All Services
 
-```
---- Measuring startup time for service: server-jvm ---
-...
-✅ Service is ready!
-Startup Time: 1.709 seconds
---- Cleaning up containers ---
-```
-
-#### 2. Running the Load Test
-
-This script uses `wrk` to measure the throughput and latency of the `POST /echo` endpoint. It simulates a high number of
-concurrent users to test the server's runtime performance under load.
-
-**Command:**
+This single command will build both the JVM and Native images (if they don't already exist) and then start all the
+services in the background.
 
 ```bash
-  ./bench-clients/rest_benchmark.sh
+	docker compose up -d --build
 ```
 
-**Sample Output:**
+*Note: The first time you run this command, the native compilation may take minutes.*
 
+Services will be available at:
+
+- **JVM Server:** [`http://localhost:8080`](http://localhost:8080)
+- **Native Server:** [`http://localhost:8081`](http://localhost:8081)
+- **Demo Client:** [`http://localhost:8082`](http://localhost:8082)
+
+### 3. Explore the Demos
+
+Open your browser to the **Demo Client at [`http://localhost:8082`](http://localhost:8082)**.
+
+- The **REST Demo** allows you to send a JSON message and receive an echo.
+- The **SSE Demo** connects to both the JVM and Native services to display a live stream of ticker data.
+
+---
+
+## Benchmarking for Phase 2.0
+
+All benchmark scripts are designed to be run from the repository root while the services are running. They accept a
+logical service name (`server-jvm` or `server-native`) as an argument.
+
+### 1. Measure Startup Time
+
+This script accurately measures the "time to readiness" for a service by polling its health check endpoint.
+
+```bash
+# Measure the JVM service
+./scripts/measure-startup.sh server-jvm
+
+# Measure the Native service
+./scripts/measure-startup.sh server-native
 ```
---- Starting REST API Benchmark ---
-Running 30s test @ http://localhost:8080/echo
-  4 threads and 50 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     2.02ms    5.60ms 155.62ms   98.60%
-    Req/Sec     7.22k     2.15k   14.70k    75.74%
-  877950 requests in 30.09s, 144.01MB read
-Requests/sec:  29177.88
-Transfer/sec:      4.79MB
---- REST API Benchmark Complete ---
+
+**Observation:** The native executable demonstrates a startup time that is an order of magnitude faster than its JVM
+counterpart.
+
+### 2. Run the REST Load Test
+
+This script uses [`wrk`](https://github.com/wg/wrk) to measure the throughput and latency of the synchronous
+`POST /echo` endpoint.
+
+```bash
+# Benchmark the JVM service's REST endpoint
+./bench-clients/rest_benchmark.sh server-jvm
+
+# Benchmark the Native service's REST endpoint
+./bench-clients/rest_benchmark.sh server-native
 ```
 
-## Project Roadmap
+### 3. Run the SSE Load Test
 
-This repository is developed in distinct, tagged phases. The `main` branch will always contain the latest completed
-phase.
+This script uses a custom-built [`k6`](https://github.com/grafana/k6) binary with the [
+`xk6-sse`](https://github.com/phymbert/xk6-sse) extension to test the server's ability to handle
+concurrent, persistent SSE connections.
 
-* ✅ **Phase 1.0: REST Baseline** - Synchronous request-response. [`(Current: v1.0-rest)`](https://github.com/apenlor/quarkus-communication-patterns-lab/releases/tag/v1.0-rest)
-* ◻️ **Phase 2.0: Server-Sent Events (SSE)** - Unidirectional server-to-client streaming.
-* ◻️ **Phase 3.0: WebSockets** - Bidirectional, full-duplex communication.
-* ◻️ **Phase 4.0: gRPC** - High-performance, contract-first RPC with bidirectional streaming.
-* ◻️ **Phase 5.0: RSocket** - Modern, reactive protocol with multiple interaction models.
-* ◻️ **Phase 6.0: Final Analysis** - Complete benchmark results and comparative analysis.
+```bash
+# Benchmark the JVM service's SSE endpoint
+./bench-clients/sse_benchmark.sh server-jvm
 
-*(Links to tags/releases will be added as they are created).*
+# Benchmark the Native service's SSE endpoint
+./bench-clients/sse_benchmark.sh server-native
+```
+
+### 4. Stop the Environment
+
+```bash
+docker compose down -v
+```
+
+---
+
+## Project Roadmap (State at v2.0-sse)
+
+- ✅ **[Phase 1.0: The REST Baseline](https://github.com/apenlor/quarkus-communication-patterns-lab/tree/v1.0-rest)**
+- ✅ **Phase 2.0: Server-Sent Events (SSE)** - *(This is the current phase)*
+- ⏳ **Phase 3.0: WebSockets**
+- 📋 **Phase 4.0: gRPC**
+- 📋 **Phase 5.0: RSocket**
+- 📋 **Phase 6.0: Final Analysis**
