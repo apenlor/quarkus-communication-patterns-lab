@@ -32,9 +32,9 @@ GraalVM native executable for direct performance comparison against the JVM.
 Ensure you are on the correct version of the code.
 
 ```bash
-	git clone https://github.com/apenlor/quarkus-communication-patterns-lab.git
-	cd quarkus-communication-patterns-lab
-	git checkout v2.0-sse
+git clone https://github.com/apenlor/quarkus-communication-patterns-lab.git
+cd quarkus-communication-patterns-lab
+git checkout v2.0-sse
 ```
 
 ### 2. Build and Run All Services
@@ -43,7 +43,7 @@ This single command will build both the JVM and Native images (if they don't alr
 services in the background.
 
 ```bash
-	docker compose up -d --build
+docker compose up -d --build
 ```
 
 *Note: The first time you run this command, the native compilation may take minutes.*
@@ -83,6 +83,68 @@ This script accurately measures the "time to readiness" for a service by polling
 **Observation:** The native executable demonstrates a startup time that is an order of magnitude faster than its JVM
 counterpart.
 
+<details>
+<summary>Click to see sample outputs</summary>
+
+**Sample Output (JVM):**
+```bash
+--- Measuring startup time for service: server-jvm (5 runs) ---
+[+] Running 2/2ment 1/5... 
+ ✔ Network quarkus-communication-patterns-lab_lab-network  Created                                                                                                 0.0s 
+ ✔ Container quarkus-lab-jvm                               Started                                                                                                 0.1s 
+Result: 351.000 ms
+[+] Running 2/2ment 2/5... 
+ ✔ Network quarkus-communication-patterns-lab_lab-network  Created                                                                                                 0.0s 
+ ✔ Container quarkus-lab-jvm                               Started                                                                                                 0.1s 
+Result: 333.000 ms
+[+] Running 2/2ment 3/5... 
+ ✔ Network quarkus-communication-patterns-lab_lab-network  Created                                                                                                 0.0s 
+ ✔ Container quarkus-lab-jvm                               Started                                                                                                 0.1s 
+Result: 344.000 ms
+[+] Running 2/2ment 4/5... 
+ ✔ Network quarkus-communication-patterns-lab_lab-network  Created                                                                                                 0.0s 
+ ✔ Container quarkus-lab-jvm                               Started                                                                                                 0.1s 
+Result: 346.000 ms
+[+] Running 2/2ment 5/5... 
+ ✔ Network quarkus-communication-patterns-lab_lab-network  Created                                                                                                 0.0s 
+ ✔ Container quarkus-lab-jvm                               Started                                                                                                 0.1s 
+Result: 328.000 ms
+-----------------------------------------------------
+Average startup time for 'server-jvm' (over 5 runs): 340.400 ms
+-----------------------------------------------------
+Measurement complete.
+```
+
+**Sample Output (Native):**
+```bash
+--- Measuring startup time for service: server-native (5 runs) ---
+[+] Running 2/2ment 1/5... 
+ ✔ Network quarkus-communication-patterns-lab_lab-network  Created                                                                                                 0.0s 
+ ✔ Container quarkus-lab-native                            Started                                                                                                 0.1s 
+Result: 8.000 ms
+[+] Running 2/2ment 2/5... 
+ ✔ Network quarkus-communication-patterns-lab_lab-network  Created                                                                                                 0.0s 
+ ✔ Container quarkus-lab-native                            Started                                                                                                 0.1s 
+Result: 8.000 ms
+[+] Running 2/2ment 3/5... 
+ ✔ Network quarkus-communication-patterns-lab_lab-network  Created                                                                                                 0.0s 
+ ✔ Container quarkus-lab-native                            Started                                                                                                 0.1s 
+Result: 8.000 ms
+[+] Running 2/2ment 4/5... 
+ ✔ Network quarkus-communication-patterns-lab_lab-network  Created                                                                                                 0.0s 
+ ✔ Container quarkus-lab-native                            Started                                                                                                 0.1s 
+Result: 8.000 ms
+[+] Running 2/2ment 5/5... 
+ ✔ Network quarkus-communication-patterns-lab_lab-network  Created                                                                                                 0.0s 
+ ✔ Container quarkus-lab-native                            Started                                                                                                 0.1s 
+Result: 7.000 ms
+-----------------------------------------------------
+Average startup time for 'server-native' (over 5 runs): 7.800 ms
+-----------------------------------------------------
+Measurement complete.
+```
+</details>
+
 ### 2. Run the REST Load Test
 
 This script uses [`wrk`](https://github.com/wg/wrk) to measure the throughput and latency of the synchronous
@@ -95,6 +157,22 @@ This script uses [`wrk`](https://github.com/wg/wrk) to measure the throughput an
 # Benchmark the Native service's REST endpoint
 ./bench-clients/rest_benchmark.sh server-native
 ```
+<details>
+<summary>Click to see sample output</summary>
+
+```bash
+--- Starting REST API Benchmark against server-jvm on network quarkus-communication-patterns-lab_lab-network ---
+Running 30s test @ http://server-jvm:8080/echo
+  4 threads and 50 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.50ms    4.86ms 144.99ms   98.61%
+    Req/Sec    10.79k     3.06k   17.22k    75.65%
+  1287387 requests in 30.10s, 211.17MB read
+Requests/sec:  42775.71
+Transfer/sec:      7.02MB
+--- REST API Benchmark Complete ---
+```
+</details>
 
 ### 3. Run the SSE Load Test
 
@@ -109,6 +187,45 @@ concurrent, persistent SSE connections.
 # Benchmark the Native service's SSE endpoint
 ./bench-clients/sse_benchmark.sh server-native
 ```
+
+<details>
+<summary>Click to see sample output</summary>
+
+```bash
+  █ THRESHOLDS 
+
+    failed_connections
+    ✓ 'count==0' count=0
+
+    time_to_first_message
+    ✓ 'p(95)<1500' p(95)=2.54ms
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    failed_connections......: 0      0/s
+    messages_received.......: 4280   42.799481/s
+    sse_event...............: 4280   42.799481/s
+    time_to_first_message...: avg=1.02ms min=0s med=1ms max=7ms p(90)=2ms p(95)=2.54ms
+
+    EXECUTION
+    vus.....................: 1      min=1       max=50
+    vus_max.................: 50     min=50      max=50
+
+    NETWORK
+    data_received...........: 373 kB 3.7 kB/s
+    data_sent...............: 6.7 kB 67 B/s
+
+
+
+
+running (1m40.0s), 00/50 VUs, 0 complete and 50 interrupted iterations
+default ✓ [ 100% ] 01/50 VUs  1m10s
+--- SSE Benchmark Complete ---
+```
+*Note: A warning about "interrupted iterations" may appear in the k6 output. This is an expected artifact of testing a long-running streaming protocol and does not indicate a failure.*
+</details>
 
 ### 4. Stop the Environment
 
