@@ -14,6 +14,8 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+    networks:
+      - lab-network
 
   server-native:
     image: quarkus-lab/server-native:${TAG:-latest}
@@ -30,6 +32,8 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+    networks:
+      - lab-network
 
   demo-client:
     image: quarkus-lab/demo-client:${TAG:-latest}
@@ -44,3 +48,9 @@ services:
         condition: service_healthy
       server-native:
         condition: service_healthy
+    networks:
+      - lab-network
+
+networks:
+  lab-network:
+    driver: bridge
