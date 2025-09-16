@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('echo-form');
     const messageInput = document.getElementById('message');
-    const statusDiv = document.getElementById('status');
-    const responseOutput = document.getElementById('response-output');
+    const responseElement = document.getElementById('response');
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -11,8 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const apiUrl = 'http://localhost:8080/echo';
         const message = messageInput.value;
 
-        statusDiv.textContent = 'Sending request...';
-        responseOutput.textContent = '';
+        responseElement.textContent = 'Sending request...';
 
         try {
             const requestPayload = {
@@ -34,13 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             // Pretty-print the JSON response
-            responseOutput.textContent = JSON.stringify(data, null, 2);
-            statusDiv.textContent = `Success! Received response with status ${response.status}.`;
+            responseElement.textContent = JSON.stringify(data, null, 2);
 
         } catch (error) {
             console.error('Error sending request:', error);
-            responseOutput.textContent = `An error occurred: ${error.message}`;
-            statusDiv.textContent = 'Request failed.';
+            responseElement.textContent = `An error occurred: ${error.message}`;
         }
     });
 });

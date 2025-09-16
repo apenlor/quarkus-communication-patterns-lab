@@ -4,42 +4,35 @@
     <meta charset="UTF-8">
     <title>SSE Ticker Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/common/main.css">
-    <style>
-        /* Styles specific to the SSE demo */
-        .ticker-box {
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-        }
-        .status { font-weight: bold; }
-        .connected { color: #27ae60; }
-        .disconnected { color: #c0392b; }
-    </style>
+    <link rel="stylesheet" href="../common/main.css">
 </head>
 <body>
 <div class="container">
-    <h1>Server-Sent Events (SSE) Ticker Demo</h1>
-    <p>This page demonstrates a real-time data stream from the server using SSE. Two independent connections are made:
-        one to the JVM service and one to the GraalVM Native service.</p>
+    <header class="page-header">
+        <h1>Server-Sent Events (SSE) Ticker</h1>
+        <p class="phase-subtitle">Phase 2.0: Server-to-Client Streaming</p>
+        <p class="intro-text">
+            This page demonstrates a real-time data stream using SSE. Two independent connections are made:
+            one to the JVM service and one to the GraalVM Native service.
+        </p>
+        <a href="../index.html" class="back-link">&larr; Back to Home</a>
+    </header>
 
-    <div class="ticker-box">
-        <h2>JVM Service (Port 8080)</h2>
-        <p>Status: <span id="jvm-status" class="disconnected">Connecting...</span></p>
-        <h4>Last Received Message:</h4>
-        <pre id="jvm-ticker">Waiting for data...</pre>
-    </div>
+    <main>
+        <div class="card">
+            <h3>JVM Service (Port 8080)</h3>
+            <p><strong>Status:</strong> <span id="status-jvm">Connecting...</span></p>
+            <p><strong>Last Received Message:</strong></p>
+            <pre id="events-jvm">{ "message": "Awaiting first event..." }</pre>
+        </div>
 
-    <div class="ticker-box">
-        <h2>Native Service (Port 8081)</h2>
-        <p>Status: <span id="native-status" class="disconnected">Connecting...</span></p>
-        <h4>Last Received Message:</h4>
-        <pre id="native-ticker">Waiting for data...</pre>
-    </div>
-
-    <a href="/" class="nav-link">&larr; Back to Home</a>
+        <div class="card">
+            <h3>Native Service (Port 8081)</h3>
+            <p><strong>Status:</strong> <span id="status-native">Connecting...</span></p>
+            <p><strong>Last Received Message:</strong></p>
+            <pre id="events-native">{ "message": "Awaiting first event..." }</pre>
+        </div>
+    </main>
 </div>
 <script src="script.js"></script>
 </body>

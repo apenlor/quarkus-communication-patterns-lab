@@ -1,13 +1,11 @@
-// File: demo-client/static/sse/script.js
 document.addEventListener('DOMContentLoaded', () => {
     // --- Connect to JVM Service ---
-    const jvmStatus = document.getElementById('jvm-status');
-    const jvmTicker = document.getElementById('jvm-ticker');
+    const jvmStatus = document.getElementById('status-jvm');
+    const jvmTicker = document.getElementById('events-jvm');
     const jvmSource = new EventSource('http://localhost:8080/stream/ticker');
 
     jvmSource.onopen = () => {
         jvmStatus.textContent = 'Connected';
-        jvmStatus.className = 'status connected';
     };
 
     jvmSource.onmessage = (event) => {
@@ -17,17 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     jvmSource.onerror = () => {
         jvmStatus.textContent = 'Disconnected';
-        jvmStatus.className = 'status disconnected';
     };
 
     // --- Connect to Native Service ---
-    const nativeStatus = document.getElementById('native-status');
-    const nativeTicker = document.getElementById('native-ticker');
+    const nativeStatus = document.getElementById('status-native');
+    const nativeTicker = document.getElementById('events-native');
     const nativeSource = new EventSource('http://localhost:8081/stream/ticker');
 
     nativeSource.onopen = () => {
         nativeStatus.textContent = 'Connected';
-        nativeStatus.className = 'status connected';
     };
 
     nativeSource.onmessage = (event) => {
@@ -37,6 +33,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     nativeSource.onerror = () => {
         nativeStatus.textContent = 'Disconnected';
-        nativeStatus.className = 'status disconnected';
     };
 });
