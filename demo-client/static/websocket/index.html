@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Dual Chat Demo</title>
+    <link rel="stylesheet" href="../common/main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>WebSocket Dual Chat Simulation</h1>
+        <a href="../index.html" class="back-link">&larr; Back to Home</a>
+    </header>
+    <main>
+        <div id="chat-area">
+            <!-- User A's Chat Instance -->
+            <div id="chat-instance-a" class="chat-instance">
+                <h2>User A</h2>
+                <div id="chat-container-a" class="chat-container">
+                    <div class="connection-status">
+                        <span id="status-indicator-a" class="status-indicator disconnected"></span>
+                        <span id="status-text-a" class="status-text">Disconnected</span>
+                    </div>
+                    <div id="messages-a" class="messages">
+                        <div class="message system">Connecting...</div>
+                    </div>
+                    <form id="chat-form-a" class="chat-form">
+                        <input type="text" id="message-input-a" class="message-input" placeholder="Send as User A"
+                               autocomplete="off" disabled>
+                        <button type="submit" id="send-button-a" class="send-button" disabled>Send</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- User B's Chat Instance -->
+            <div id="chat-instance-b" class="chat-instance">
+                <h2>User B</h2>
+                <div id="chat-container-b" class="chat-container">
+                    <div class="connection-status">
+                        <span id="status-indicator-b" class="status-indicator disconnected"></span>
+                        <span id="status-text-b" class="status-text">Disconnected</span>
+                    </div>
+                    <div id="messages-b" class="messages">
+                        <div class="message system">Connecting...</div>
+                    </div>
+                    <form id="chat-form-b" class="chat-form">
+                        <input type="text" id="message-input-b" class="message-input" placeholder="Send as User B"
+                               autocomplete="off" disabled>
+                        <button type="submit" id="send-button-b" class="send-button" disabled>Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

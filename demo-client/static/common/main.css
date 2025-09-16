@@ -6,6 +6,9 @@ body {
     line-height: 1.6;
     color: #333;
     background-color: #f4f4f9;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .container {
@@ -24,6 +27,16 @@ pre {
     white-space: pre-wrap;
     word-wrap: break-word;
     border: 1px solid #ddd;
+}
+
+body.centered-content .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Horizontally center flex items */
+    justify-content: center; /* Vertically center flex items */
+    flex-grow: 1; /* Allow the container to fill the vertical space */
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 /* --- Navigation Styles --- */
