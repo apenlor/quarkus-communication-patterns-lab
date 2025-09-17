@@ -6,6 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.http.WebSocketClient;
 import jakarta.inject.Inject;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,9 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.concurrent.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration test for the {@link ChatSocket} WebSocket endpoint.
@@ -34,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ChatSocketTest {
 
     private static final Logger log = LoggerFactory.getLogger(ChatSocketTest.class);
-    private static final int TIMEOUT_SECONDS = 10;
+    private static final Duration TIMEOUT = Duration.ofSeconds(10);
 
     @Inject
     Vertx vertx;
@@ -63,14 +66,10 @@ class ChatSocketTest {
         BlockingQueue<String> messagesClient2 = new LinkedBlockingQueue<>();
         BlockingQueue<String> messagesSender = new LinkedBlockingQueue<>();
 
-        // Connect all three clients
-        CompletableFuture<WebSocket> client1Future = connectClient("Listener 1");
-        CompletableFuture<WebSocket> client2Future = connectClient("Listener 2");
-        CompletableFuture<WebSocket> senderFuture = connectClient("Sender");
-
-        WebSocket client1 = client1Future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        WebSocket client2 = client2Future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        WebSocket sender = senderFuture.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        // Connect all three clients asynchronously.
+        WebSocket client1 = connectClient("Listener 1").get(TIMEOUT.toSeconds(), TimeUnit.SECONDS);
+        WebSocket client2 = connectClient("Listener 2").get(TIMEOUT.toSeconds(), TimeUnit.SECONDS);
+        WebSocket sender = connectClient("Sender").get(TIMEOUT.toSeconds(), TimeUnit.SECONDS);
 
         // Route messages to the correct per-client queue
         client1.textMessageHandler(messagesClient1::add);
@@ -87,19 +86,16 @@ class ChatSocketTest {
                 sentFuture.completeExceptionally(result.cause());
             }
         });
+        // Wait for the send operation to complete.
+        sentFuture.get(TIMEOUT.toSeconds(), TimeUnit.SECONDS);
 
-        // Wait for the send operation to complete
-        sentFuture.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        // Assert that both listener clients receive the message.
+        Awaitility.await().atMost(TIMEOUT).until(() -> messagesClient1.size() == 1 && messagesClient2.size() == 1);
 
-        // Verify the two listener clients received the message
-        String receivedMsg1 = messagesClient1.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        assertNotNull(receivedMsg1, "Client 1 did not receive the message in time");
-        assertEquals(messageToSend, receivedMsg1);
+        assertEquals(messageToSend, messagesClient1.poll());
         log.info("Verified Listener 1 received the message.");
 
-        String receivedMsg2 = messagesClient2.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        assertNotNull(receivedMsg2, "Client 2 did not receive the message in time");
-        assertEquals(messageToSend, receivedMsg2);
+        assertEquals(messageToSend, messagesClient2.poll());
         log.info("Verified Listener 2 received the message.");
 
         // Verify the sender's queue is empty
