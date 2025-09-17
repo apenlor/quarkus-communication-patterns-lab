@@ -1,0 +1,32 @@
+<configuration>
+
+    <!-- Appender for standard application logging (INFO, WARN, ERROR) -->
+    <appender name="STDOUT_LOG" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{15} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Appender for direct user-facing output (chat messages, prompts) -->
+    <appender name="STDOUT_RAW" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- This pattern only prints the message itself, nothing else -->
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- The dedicated logger for user output. It uses the RAW appender. -->
+    <!-- additivity="false" prevents messages from being sent to the root logger too. -->
+    <logger name="output" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT_RAW" />
+    </logger>
+
+    <!-- Set the log level for noisy gRPC internals to WARN -->
+    <logger name="io.grpc" level="WARN"/>
+
+    <!-- The root logger handles all standard application logging -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT_LOG"/>
+    </root>
+
+</configuration>
