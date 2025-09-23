@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>gRPC Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../common/main.css">
+</head>
+<body>
+<div class="container">
+    <header class="page-header">
+        <h1>gRPC Command-Line Demo</h1>
+        <p class="phase-subtitle">Phase 4.0: Contract-First RPC</p>
+        <p class="intro-text">
+            This demo showcases the gRPC chat service using a standalone Java command-line client.
+            This approach is used to demonstrate the native gRPC protocol directly, as it would be used
+            between backend services.
+        </p>
+        <a href="../index.html" class="back-link">&larr; Back to Home</a>
+    </header>
+
+    <main>
+        <div class="card">
+            <h3>Architectural Note</h3>
+            <p>
+                Direct gRPC communication is not supported in web browsers without a proxy technology called
+                <a href="https://grpc.io/docs/platforms/web/basics/" target="_blank"
+                   rel="noopener noreferrer">gRPC-Web</a>.
+                To keep this lab focused on the backend patterns, we are demonstrating gRPC via a dedicated CLI
+                client.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Step 1: Build the Client</h3>
+            <p>First, build the client's executable JAR. Run this from the project's root directory:</p>
+            <pre><code>(cd demo-client/grpc-cli && ./mvnw clean package)</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Step 2: Run the Chat Client</h3>
+            <p>Open two separate terminals to simulate a chat. Use the commands below to connect to the <strong>JVM
+                server</strong> (port 9001).</p>
+            <h4>Terminal 1 (e.g., "Alice")</h4>
+            <pre><code>java -jar demo-client/grpc-cli/target/grpc-cli-client-*.jar localhost 9001</code></pre>
+            <h4>Terminal 2 (e.g., "Bob")</h4>
+            <pre><code>java -jar demo-client/grpc-cli/target/grpc-cli-client-*.jar localhost 9001</code></pre>
+            <p>To test the <strong>Native server</strong>, simply change the port to <strong>9002</strong>.</p>
+        </div>
+    </main>
+</div>
+</body>
+</html>
