@@ -1,76 +1,100 @@
-# Quarkus & GraalVM Communication Patterns Lab
+# Quarkus & GraalVM Communication Patterns Lab (v4.0-grpc)
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/33df58ded13c4bf39ef8bc99670b7570)](https://app.codacy.com/gh/apenlor/quarkus-communication-patterns-lab/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![CI Build Status](https://github.com/apenlor/quarkus-communication-patterns-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/apenlor/quarkus-communication-patterns-lab/actions/workflows/ci.yml)
 [![Latest Tag](https://img.shields.io/github/v/tag/apenlor/quarkus-communication-patterns-lab)](https://github.com/apenlor/quarkus-communication-patterns-lab/tags)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A repository that systematically demonstrates, benchmarks, and compares common client-server communication patterns on
-the Quarkus framework. It contrasts the performance characteristics of the standard JVM against a GraalVM native
-executable.
+This README documents the state of the project at the **v4.0-grpc** tag. This phase introduces a high-performance,
+contract-first communication pattern using **gRPC**. The implementation features a bidirectional streaming chat service
+defined with Protocol Buffers (`.proto`).
 
-## Core Principles
+A key deliverable for this phase is a standalone Java command-line client, which serves as the primary demonstration
+tool. The benchmark for this phase is also a custom-built, multithreaded Java application, needed for
+measuring the performance of a stateful, bidirectional stream.
 
-- **Reproducibility:** The entire lab is runnable via Docker Compose, with zero local dependencies besides Docker
-  itself.
-- **Phased Development:** The project is built additively, with each phase frozen by an immutable Git tag.
-- **Documented Evolution:** Architectural decisions are captured in detail within Pull Requests, creating a rich,
-  reviewable history of the project's engineering journey.
+## Technology stack
+
+- **Backend:** Java 21 & Quarkus 3.x
+- **Runtimes:** JVM, GraalVM Native
+- **RPC Framework:** gRPC with Protocol Buffers
+- **Containerization:** Docker & Docker Compose
+- **Demo Client:** Static HTML/JS (for instructions) & a standalone Java CLI Application
+- **Benchmark Tooling:**
+    - `k6` for HTTP-based protocols
+    - **Custom Java Benchmark Client** (using `HdrHistogram`) for gRPC
 
 ---
 
-## Quickstart (Latest Version)
+## How to run this phase
 
-This guide runs the latest version of the project from the `main` branch.
-
-**Prerequisites:**
+### Prerequisites
 
 - Docker and Docker Compose
-- A shell environment (Bash, Zsh)
+- A Java 21+ JDK and Maven (`mvn`) for running the demo client.
+- A shell environment (Bash, Zsh).
 
-### 1. Build & Run all services
+### 1. Clone and check out the tag
 
-This single command builds all necessary images (application and tooling) and starts the services in the background.
-
-```bash
-docker compose up -d --build
-```
-
-*Note: The first time you run this, the native compilation and custom benchmark image builds may take several minutes.*
-
-Services are available at:
-
-- **JVM Server:** `http://localhost:8080`
-- **Native Server:** `http://localhost:8081`
-- **Demo Client:** `http://localhost:8082`
-
-### 2. Explore the Demos
-
-Open your browser to the **Demo Client at `http://localhost:8082`**. This page is a navigation hub linking to demos for
-all implemented communication patterns.
-
-### 3. Stop the Environment
+Ensure you are on the correct version of the code.
 
 ```bash
-docker compose down -v
+git clone https://github.com/apenlor/quarkus-communication-patterns-lab.git
+cd quarkus-communication-patterns-lab
+git checkout v4.0-grpc
 ```
+
+### 2. Build and run all services
+
+This command builds the JVM and Native images and starts all services.
+
+```bash
+docker-compose up -d --build
+```
+
+Services will be available at:
+
+- **JVM Server:** HTTP at `http://localhost:8080`, gRPC at `localhost:9001`
+- **Native Server:** HTTP at `http://localhost:8081`, gRPC at `localhost:9002`
+- **Web Demo Hub:** `http://localhost:8082`
+
+### 3. Explore the demos
+
+Open your browser to the **Web Demo Hub at [`http://localhost:8082`](http://localhost:8082)**. From there, you can
+navigate to the demos for each protocol.
+
+The gRPC demo page provides instructions for running the interactive command-line client, which is the primary way to
+test the gRPC service. You will need at least two terminals to simulate a chat.
+
+**First, build the CLI client:**
+
+```bash
+# From the project root
+(cd demo-client/grpc-cli && ./mvnw clean package)
+```
+
+**Next, run two instances (e.g., in two separate terminals) connecting to the same server port.**
+
+```bash
+# Terminal 1 (connecting to the JVM server as "Alice")
+java -jar demo-client/grpc-cli/target/grpc-cli-client-*.jar localhost 9001
+
+# Terminal 2 (connecting to the JVM server as "Bob")
+java -jar demo-client/grpc-cli/target/grpc-cli-client-*.jar localhost 9001
+```
+
+To test the native server, use port `9002`.
 
 ---
 
-## Benchmark Suite
+## Benchmarking for phase 4.0
 
-A primary goal of this repository is to provide a clear, quantitative comparison of different communication patterns and
-runtimes. The project includes a suite of tools designed to measure distinct performance characteristics.
+All benchmark scripts are run from the repository root and accept the target container name (`server-jvm` or
+`server-native`) as an argument.
 
-### 1. Startup Time Measurement
+### 1. Measure startup time
 
-To capture a pure "time-to-readiness" metric, a custom script ([`scripts/measure-startup.sh`](scripts/measure-startup.sh)) is
-provided. This script repeatedly creates and starts a fresh service container, parsing the application's logs to
-determine the precise moment it becomes operational. This provides a clear measure of the advantage offered by GraalVM
-native compilation.
-
-**How to Run:**
-The script accepts the target service name and will perform 5 runs to calculate a stable average.
+This script measures the "time to readiness" by parsing the application's startup logs.
 
 ```bash
 # Measure the JVM service
@@ -80,60 +104,91 @@ The script accepts the target service name and will perform 5 runs to calculate 
 ./scripts/measure-startup.sh server-native
 ```
 
-### 2. Load Testing with k6
+### 2. Run all load tests
 
-For load and performance testing, the project has standardized on **[`k6`](https://k6.io/)** as a single, powerful
-toolchain. This provides a consistent, maintainable, and scalable framework for analysis across all relevant protocols.
+This section provides the commands to run the load tests for all implemented protocols.
 
-Each k6 script is designed to test the core strengths of its corresponding protocol under a sustained, concurrent load:
+<details>
+<summary><strong>REST Benchmark (k6)</strong></summary>
 
-- **REST:** Measures the raw throughput and latency of synchronous, stateless request-response cycles.
-- **SSE:** Measures the server's ability to handle a large number of concurrent, long-lived, one-way streaming
-  connections.
-- **WebSockets:** Measures the performance of stateful, bidirectional connections, focusing on connection stability and
-  message round-trip time (RTT).
-
-**How to Run:**
-All load tests are executed via simple wrapper scripts in the [`bench-clients/`](bench-clients) directory.
-Each accepts the target service name (`server-jvm` or `server-native`).
-
-**REST Benchmark**
+This test measures the throughput and latency of the synchronous `POST /echo` endpoint.
 
 ```bash
 ./bench-clients/rest-benchmark.sh server-jvm
 ./bench-clients/rest-benchmark.sh server-native
 ```
 
-**SSE Benchmark**
+</details>
+
+<details>
+<summary><strong>SSE Benchmark (k6 with xk6-sse)</strong></summary>
+
+This test uses a custom `k6` build to measure concurrent, persistent SSE connections.
+
 ```bash
 ./bench-clients/sse-benchmark.sh server-jvm
 ./bench-clients/sse-benchmark.sh server-native
-
 ```
 
-**WebSocket Benchmark**
+</details>
+
+<details>
+<summary><strong>WebSocket Benchmark (k6)</strong></summary>
+
+This test measures the server's ability to handle concurrent, bidirectional WebSocket connections and the end-to-end
+broadcast latency.
+
 ```bash
 ./bench-clients/ws-benchmark.sh server-jvm
 ./bench-clients/ws-benchmark.sh server-native
 ```
 
-For detailed instructions and sample outputs for any specific phase, please refer to the `README.md` at its
-corresponding Git Tag.
+</details>
+
+#### gRPC Benchmark (Custom Java Client)
+
+This test uses our custom-built, multi-threaded Java client to measure the end-to-end broadcast latency of the stateful
+`BidiChat` service.
+
+```bash
+./bench-clients/grpc-benchmark.sh server-jvm
+./bench-clients/grpc-benchmark.sh server-native
+```
+
+An example of the detailed output:
+
+```bash
+-------------------- Benchmark Results --------------------
+Total Messages Measured: 1274313
+Total Timeouts: 0 (indicates back-pressure)
+Throughput: 42477,10 msg/sec
+---------------------------------------------------------
+Latency (microseconds):
+  min:      0
+  mean:     2,00
+  p50 (median): 1
+  p90:      5
+  p99:      13
+  p99.9:    18
+  max:      83230
+---------------------------------------------------------
+```
+
+### 3. Stop the environment
+
+When you are finished, stop and remove all containers.
+
+```bash
+docker-compose down -v
+```
 
 ---
 
-## Project Evolution: A Phase-by-Phase Journey
+## Project roadmap (state at v4.0-grpc)
 
-This project was built incrementally to demonstrate a clean, evolutionary design process. Each phase represents a
-significant new capability. To follow the engineering narrative, start by reviewing the Pull Request, which contains
-the "why" behind the decisions. To see the final, clean implementation of a phase, browse the code at the corresponding
-Git Tag.
-
-| Phase                             | Status | Focus                                                                                                | Key Artifacts                                                                                                                                                                                      |
-|-----------------------------------|:------:|------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **1.0: REST Baseline**            |   ✅    | Establish the project structure, a JSON REST API, and baseline JVM performance metrics.              | [Code @ `v1.0-rest`](https://github.com/apenlor/quarkus-communication-patterns-lab/tree/v1.0-rest) <br/> [PR #1](https://github.com/apenlor/quarkus-communication-patterns-lab/pull/1)             |
-| **2.0: Server-Sent Events (SSE)** |   ✅    | Introduce one-way server-to-client streaming and add the GraalVM native executable for comparison.   | [Code @ `v2.0-sse`](https://github.com/apenlor/quarkus-communication-patterns-lab/tree/v2.0-sse) <br/> [PR #4](https://github.com/apenlor/quarkus-communication-patterns-lab/pull/4)               |
-| **3.0: WebSockets**               |   ✅    | Implement full-duplex communication and unify the entire benchmark suite on a modern `k6` toolchain. | [Code @ `v3.0-websockets`](https://github.com/apenlor/quarkus-communication-patterns-lab/tree/v3.0-websockets) <br/> [PR #6](https://github.com/apenlor/quarkus-communication-patterns-lab/pull/6) |
-| **4.0: gRPC**                     |   ⏳    | Implement a high-performance, contract-first RPC service using Protocol Buffers.                     | *(In Progress)*                                                                                                                                                                                    |
-| **5.0: RSocket**                  |   📋   | Demonstrate a modern, reactive protocol with multiple, well-defined interaction models.              | *(Planned)*                                                                                                                                                                                        |
-| **6.0: Final Analysis**           |   📋   | Consolidate all benchmark results and write a final analysis to complete the project's narrative.    | *(Planned)*                                                                                                                                                                                        |
+- ✅ **[Phase 1.0: The REST Baseline](https://github.com/apenlor/quarkus-communication-patterns-lab/tree/v1.0-rest)**
+- ✅ **[Phase 2.0: Server-Sent Events](https://github.com/apenlor/quarkus-communication-patterns-lab/tree/v2.0-sse)**
+- ✅ **[Phase 3.0: WebSockets](https://github.com/apenlor/quarkus-communication-patterns-lab/tree/v3.0-websockets)**
+- ✅ **Phase 4.0: gRPC** - *(This is the current phase)*
+- ⏳ **Phase 5.0: RSocket**
+- 📋 **Phase 6.0: Final Analysis**
