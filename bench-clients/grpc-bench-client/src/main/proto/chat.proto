@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_package = "com.apenlor.lab.grpc";
+option java_multiple_files = true;
+option java_outer_classname = "ChatProto";
+
+package chat;
+
+// Represents a single chat message sent by a user.
+message ChatMessage {
+  string sender = 1; // The username of the sender.
+  string message = 2; // The content of the message.
+  string timestamp = 3; // The server-side timestamp when the message was received (ISO 8601 format).
+}
+
+// Service definition for a bidirectional chat.
+service ChatService {
+  // BidiChat establishes a bidirectional stream for real-time chat.
+  // Clients send ChatMessage and receive ChatMessage from other participants.
+  rpc BidiChat(stream ChatMessage) returns (stream ChatMessage);
+}
