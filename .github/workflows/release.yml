@@ -1,0 +1,57 @@
+name: Create and Publish Release
+
+on:
+  # Trigger automatically for v* tags
+  push:
+    tags:
+      - 'v*.*'
+  # Allow manual triggering for backfilling old releases
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The tag to create a release for (e.g., v1.0-rest)'
+        required: true
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Determine tag name
+        id: get_tag
+        run: |
+          TAG_NAME="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "Processing tag: ${TAG_NAME}"
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+
+      - name: Checkout code at the specified tag
+        # actions/checkout@v5.0.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          ref: ${{ env.TAG_NAME }}
+
+      - name: Create source code archive
+        run: |
+          ARCHIVE_NAME="${{ github.event.repository.name }}-${{ env.TAG_NAME }}.tar.gz"
+          tar -czvf "${ARCHIVE_NAME}" --exclude='.git' .
+          echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
+          echo "Created archive: ${ARCHIVE_NAME}"
+
+      - name: Calculate checksums
+        run: |
+          sha256sum "${{ env.ARCHIVE_NAME }}" > SHA256SUMS.txt
+          echo "Calculated checksums."
+
+      - name: Create or update GitHub Release
+        #softprops/action-gh-release@2.3.3
+        uses: softprops/action-gh-release@6cbd405e2c4e67a21c47fa9e383d020e4e28b836
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          files: |
+            ${{ env.ARCHIVE_NAME }}
+            SHA256SUMS.txt
+          allow_override: true
+          generate_release_notes: true
