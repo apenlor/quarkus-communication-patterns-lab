@@ -44,7 +44,7 @@ jobs:
           REPO_NAME: ${{ github.event.repository.name }}
         run: |
           ARCHIVE_NAME="${REPO_NAME}-${TAG}.tar.gz"
-          tar -czvf "${ARCHIVE_NAME}" --exclude='.git' .
+          tar -czvf "${ARCHIVE_NAME}" --exclude='.git' --exclude="${ARCHIVE_NAME}" .
           echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
           echo "Created archive: ${ARCHIVE_NAME}"
 
