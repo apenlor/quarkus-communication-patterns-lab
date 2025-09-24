@@ -44,5 +44,4 @@ jobs:
           files: |
             ${{ env.ARCHIVE_NAME }}
             SHA256SUMS.txt
-          allow_override: true
           generate_release_notes: true
