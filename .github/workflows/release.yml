@@ -1,4 +1,4 @@
-name: Create and Publish Release
+name: Create & publish release
 
 on:
   # Trigger automatically for v* tags
@@ -44,7 +44,11 @@ jobs:
           REPO_NAME: ${{ github.event.repository.name }}
         run: |
           ARCHIVE_NAME="${REPO_NAME}-${TAG}.tar.gz"
-          tar -czvf "${ARCHIVE_NAME}" --exclude='.git' --exclude="${ARCHIVE_NAME}" .
+          tar --sort=name --mtime='UTC 2020-01-01' \
+              --owner=0 --group=0 --numeric-owner \
+              --ignore-failed-read --warning=no-file-changed \
+              -czf "${ARCHIVE_NAME}" \
+              --exclude='.git' --exclude="${ARCHIVE_NAME}" .
           echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
           echo "Created archive: ${ARCHIVE_NAME}"
 
