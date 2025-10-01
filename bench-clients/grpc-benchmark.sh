@@ -18,12 +18,13 @@
 set -euo pipefail
 
 # --- Spinner ---
+# This spinner will now only run if the script is in an interactive terminal.
 spinner() {
     local chars="/-\\|"
     while :; do
         for (( i=0; i<${#chars}; i++ )); do
             sleep 0.1
-            echo -en "${chars:$i:1} Running..." "\r"
+            echo -en "${chars:$i:1} Running..." "\r" > /dev/tty
         done
     done
 }
@@ -41,8 +42,8 @@ TARGET_SERVICE=$1
 : "${DURATION_SECONDS:=30}"
 
 BENCHMARK_PROJECT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/grpc-bench-client"
-JAR_NAME="grpc-bench-client-1.0.0-SNAPSHOT.jar"
-JAR_PATH="${BENCHMARK_PROJECT_DIR}/target/${JAR_NAME}"
+JAR_NAME_PATTERN="grpc-bench-client-*.jar"
+JAR_PATH_GLOB="${BENCHMARK_PROJECT_DIR}/target/${JAR_NAME_PATTERN}"
 
 # --- Determine target host and port ---
 TARGET_HOST="localhost"
@@ -76,23 +77,39 @@ echo "Building benchmark client JAR..."
 echo "Build complete."
 echo
 
+JAR_PATH=$(find "${BENCHMARK_PROJECT_DIR}/target" -name "${JAR_NAME_PATTERN}" -not -name "original-*.jar")
+
 if [ ! -f "$JAR_PATH" ]; then
-    echo "Error: Benchmark JAR not found at ${JAR_PATH}" >&2
+    echo "Error: Benchmark JAR not found at ${JAR_PATH_GLOB} after build." >&2
+    exit 1
+fi
+if [ "$(echo "$JAR_PATH" | wc -l)" -ne 1 ]; then
+    echo "Error: Ambiguous JAR file. Found multiple files:" >&2
+    echo "$JAR_PATH" >&2
     exit 1
 fi
 
 # --- Execution ---
 echo "Running benchmark..."
 
-spinner &
-SPINNER_PID=$!
-trap 'kill $SPINNER_PID 2>/dev/null' EXIT
+# The `[ -t 1 ]` expression returns true only when the script is run interactively.
+# When output is piped to `tee` (as in `run-all-benchmarks.sh`), this is false.
+if [ -t 1 ]; then
+    spinner &
+    SPINNER_PID=$!
+    # Ensure the spinner is killed when the script exits for any reason.
+    trap 'kill $SPINNER_PID 2>/dev/null; echo -en "\r\033[K" > /dev/tty' EXIT
+fi
 
-java -jar "$JAR_PATH" "$TARGET_HOST" "$TARGET_PORT" "$CONCURRENCY" "$DURATION_SECONDS"
+# The Java application's output (the clean summary) goes to standard output.
+java -jar "$JAR_PATH" --quiet "$TARGET_HOST" "$TARGET_PORT" "$CONCURRENCY" "$DURATION_SECONDS"
 
-kill $SPINNER_PID 2>/dev/null
-trap - EXIT
-echo -en "\r\033[K"
+# Cleanly stop the spinner if it was started.
+if [ -n "${SPINNER_PID:-}" ]; then
+    kill "$SPINNER_PID" 2>/dev/null
+    trap - EXIT # Clear the trap
+    echo -en "\r\033[K" > /dev/tty
+fi
 
 echo
 echo "============================================================"
