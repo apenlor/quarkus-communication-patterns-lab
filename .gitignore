@@ -61,3 +61,6 @@ dependency-check-report.*
 
 # Local environment variables
 .env
+
+# Benchmark results
+bench-clients/results/
