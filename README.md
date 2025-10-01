@@ -64,7 +64,7 @@ runtimes.
 
 ### 1. Startup time measurement
 
-A custom script ([`scripts/measure-startup.sh`](bench-clients/measure-startup.sh)) repeatedly creates a fresh container and
+A custom script ([`bench-clients/startup-benchmark.sh`](bench-clients/startup-benchmark.sh)) repeatedly creates a fresh container and
 parses application logs to determine the precise "time-to-readiness," clearly measuring the advantage of GraalVM native
 compilation.
 
